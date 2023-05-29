@@ -4,7 +4,7 @@ const Contact = require("./Contact");
 module.exports.getAllContact = (req, res) => {
   Contact.find()
     .then((contacts) => {
-      res.render('index', {contacts})
+      res.render("index", { contacts, error: {} });
     })
     .catch((e) => {
       console.error(e);
@@ -31,21 +31,56 @@ module.exports.getSingleContact = (req, res) => {
 
 //create contacts
 module.exports.createContact = (req, res) => {
-  let { name, email, phone } = req.body;
+  let { name, email, phone, id } = req.body;
+
+  let error = {};
+
+  if (!name) {
+    error.name = "Please Provide A Name";
+  }
+
+  if (!phone) {
+    error.phone = "Please Provide A Phone Number";
+  }
+  if (!email) {
+    error.email = "Please Provide An Email";
+  }
+
+  let isError = Object.keys(error).length > 0;
+
+  if (isError) {
+    Contact.find()
+      .then((contacts) => {
+        return res.render("index", { contacts, error });
+      })
+      .catch((e) => {
+        console.log(e);
+        return res.json({
+          message: "Error Occurred",
+        });
+      });
+  }
+
+  //console.log(req.body);
+  //console.log(error, isError);
+  //return;
+  //console.log(contact);
   let contact = new Contact({
     name,
     email,
     phone,
   });
-  //console.log(contact);
+  
   contact
     .save()
     .then((c) => {
-      res.json(c);
+      Contact.find().then((contacts) => {
+        return res.render("index", { contacts, error: {} });
+      });
     })
     .catch((e) => {
       console.error(e);
-      res.json({
+      return res.json({
         message: "Error Occurred",
       });
     });
