@@ -60,31 +60,50 @@ module.exports.createContact = (req, res) => {
         });
       });
   }
-
-  //console.log(req.body);
-  //console.log(error, isError);
-  //return;
-  //console.log(contact);
-  let contact = new Contact({
-    name,
-    email,
-    phone,
-  });
-
-  contact
-    .save()
-    .then(() => {
-      Contact.find()
-      .then((contacts) => {
-        return res.render("index", { contacts, error: {} });
+  if (id) {
+    Contact.findOneAndUpdate(
+      { _id: id },
+      {
+        $set: {
+          name,
+          email,
+          phone,
+        },
+      }
+    )
+      .then(() => {
+        Contact.find()
+        .then((contacts) => {
+          res.render("index", { contacts, error: {} });
+        });
+      })
+      .catch((e) => {
+        console.error(e);
+        return res.json({
+          message: "Error Occurred",
+        });
       });
-    })
-    .catch((e) => {
-      console.error(e);
-      return res.json({
-        message: "Error Occurred",
-      });
+  } else {
+    let contact = new Contact({
+      name,
+      email,
+      phone,
     });
+
+    contact
+      .save()
+      .then(() => {
+        Contact.find().then((contacts) => {
+          return res.render("index", { contacts, error: {} });
+        });
+      })
+      .catch((e) => {
+        console.error(e);
+        return res.json({
+          message: "Error Occurred",
+        });
+      });
+  }
 };
 
 //update Contacts
@@ -119,8 +138,7 @@ module.exports.deleteContact = (req, res) => {
   let { id } = req.params;
   Contact.findOneAndDelete({ _id: id })
     .then(() => {
-      Contact.find()
-      .then((contacts) => {
+      Contact.find().then((contacts) => {
         res.render("index", { contacts, error: {} });
       });
     })
