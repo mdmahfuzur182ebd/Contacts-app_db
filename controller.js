@@ -70,11 +70,12 @@ module.exports.createContact = (req, res) => {
     email,
     phone,
   });
-  
+
   contact
     .save()
-    .then((c) => {
-      Contact.find().then((contacts) => {
+    .then(() => {
+      Contact.find()
+      .then((contacts) => {
         return res.render("index", { contacts, error: {} });
       });
     })
@@ -117,8 +118,11 @@ module.exports.updateContact = (req, res) => {
 module.exports.deleteContact = (req, res) => {
   let { id } = req.params;
   Contact.findOneAndDelete({ _id: id })
-    .then((contact) => {
-      res.json(contact);
+    .then(() => {
+      Contact.find()
+      .then((contacts) => {
+        res.render("index", { contacts, error: {} });
+      });
     })
     .catch((e) => {
       console.log(e);
